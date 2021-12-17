@@ -2,6 +2,9 @@ import React, { useState, useCallback, useEffect } from "react";
 import Video from "twilio-video";
 import CreateRoomForm from "./components/roomcreateform";
 import Room from "./Room";
+import axios from 'axios';
+import config from "./config/config";
+
 
 const CreateRoom = () => {
   const [username, setUsername] = useState("");
@@ -21,18 +24,29 @@ const CreateRoom = () => {
     async (event) => {
       event.preventDefault();
       setConnecting(true);
-      const response = await fetch("/v1/video/create-token", {
-        method: "POST",
-        body: JSON.stringify({
+      
+      let url = config.base_url+"/v1/video/create-token";
+      let params = {
           identity: username,
           roomname: roomName,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }).then((res) => res.json());
-      if(response.success && response.success.data){
-        Video.connect(response.success.data.token, {
+        }
+      let headers = {
+            "Content-Type": "application/json",
+      }
+      const response =  await axios.post(url, params, headers);
+      
+      // const response = await fetch("/v1/video/create-token", {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     identity: username,
+      //     roomname: roomName,
+      //   }),
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      // }).then((res) => res.json());
+      if(response.data.success && response.data.success.data){
+        Video.connect(response.data.success.data.token, {
           name: roomName,
         })
           .then((room) => {
