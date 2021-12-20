@@ -11,6 +11,7 @@ const CreateRoom = () => {
   const [roomName, setRoomName] = useState("");
   const [room, setRoom] = useState(null);
   const [connecting, setConnecting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleUsernameChange = useCallback((event) => {
     setUsername(event.target.value);
@@ -32,11 +33,35 @@ const CreateRoom = () => {
         }
       let headers = {
             "Content-Type": "application/json",
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true,
-            'Access-Control-Allow-Headers': '*'
+            'Access-Control-Allow-Origin': '*'
       }
-      const response =  await axios.post(url, params, headers);
+
+      const response = await new Promise((resolve, reject) => {
+        axios.post(url, params, headers)
+         .then(function (data) {
+           resolve(data);
+         })
+         .catch(function (error) {
+          console.log("error", error)
+          if (error.response) {
+            resolve(error.response.data)
+            //return error.response.data
+          } 
+         });
+       });
+       console.log("response", response)
+      // let response = null;
+      // try {
+      //   response =  await axios.post(url, params, headers)
+      // } catch (err) {
+      //     // Handle Error Here
+      //     console.error("err---",  err);
+      // }
+     
+     // const response =  await axios.post(url, params, headers)
+     
+      // .then(result => { console.log(result); return result; })
+      // .catch(error => { console.error(error); throw error; });
       
       // const response = await fetch("/v1/video/create-token", {
       //   method: "POST",
@@ -49,6 +74,7 @@ const CreateRoom = () => {
       //   },
       // }).then((res) => res.json());
       if(response.data.success && response.data.success.data){
+        console.log("response.data", response.data);
         Video.connect(response.data.success.data.token, {
           name: roomName,
         })
@@ -60,6 +86,9 @@ const CreateRoom = () => {
             console.error(err);
             setConnecting(false);
           });
+      }else{
+        console.log("response.data", response.message);
+        setError(response.data.message)
       }
      
     },
@@ -111,6 +140,7 @@ const CreateRoom = () => {
         handleRoomNameChange={handleRoomNameChange}
         handleSubmit={handleSubmit}
         connecting={connecting}
+        error={error}
       />
     );
   }

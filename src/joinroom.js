@@ -33,19 +33,22 @@ const JoinRoom = () => {
       let headers = {
             "Content-Type": "application/json",
       }
-      const response =  await axios.post(url, params, headers);
+      //const response =  await axios.post(url, params, headers);
+      const response = await new Promise((resolve, reject) => {
+        axios.post(url, params, headers)
+         .then(function (data) {
+           resolve(data);
+         })
+         .catch(function (error) {
+          console.log("error", error)
+          if (error.response) {
+            resolve(error.response.data)
+            //return error.response.data
+          } 
+         });
+       });
 
-      // const response = await fetch("/v1/video/join-room", {
-      //   method: "POST",
-      //   body: JSON.stringify({
-      //     identity: username,
-      //     roomname: roomName,
-      //   }),
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      // }).then((res) => res.json());
-      if(response.data.success && response.data.success.data){
+       if(response.data && response.data.success && response.data.success.data){
         Video.connect(response.data.success.data.token, {
           name: roomName,
         })
@@ -58,6 +61,7 @@ const JoinRoom = () => {
             setConnecting(false);
           });
       }else{
+        console.log("response.data", response.message);
         setError(response.message)
       }
      

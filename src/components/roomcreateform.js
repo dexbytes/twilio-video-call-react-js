@@ -8,10 +8,12 @@ const Lobby = ({
   handleRoomNameChange,
   handleSubmit,
   connecting,
+  error
 }) => {
   return (
     <form className={"room-form"} onSubmit={handleSubmit}>
       <h2>Create a room</h2>
+      <div className={"room-error"}> {error?error:""} </div>
       <div>
         <label htmlFor="name">Name:</label>
         <input
