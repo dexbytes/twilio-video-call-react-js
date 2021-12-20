@@ -32,6 +32,9 @@ const CreateRoom = () => {
         }
       let headers = {
             "Content-Type": "application/json",
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true,
+            'Access-Control-Allow-Headers': '*'
       }
       const response =  await axios.post(url, params, headers);
       
