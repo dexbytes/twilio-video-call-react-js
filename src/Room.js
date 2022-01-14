@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Participant from "./Participant";
 
-const Room = ({ roomName, room, handleLogout }) => {
+const Room = ({ roomName, room, handleLogout, handleScreenShare = (()=>{}), isScreenSharingSupported, isScreenSharingEnabled=false}) => {
   const [participants, setParticipants] = useState([]);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const Room = ({ roomName, room, handleLogout }) => {
   return (
     <div className="room">
       <h2>Room: {roomName}</h2>
-      <button onClick={handleLogout}>Log out</button>
+        <button onClick={handleLogout}>Log out</button>
       <div className="local-participant">
         {room ? (
           <Participant
@@ -43,6 +43,12 @@ const Room = ({ roomName, room, handleLogout }) => {
         )}
       </div>
       <h3>Remote Participants</h3>
+      <button 
+          onClick={handleScreenShare}
+          disabled={!isScreenSharingSupported}
+      >
+        {isScreenSharingEnabled ? "Stop sharing" : "Start sharing"}
+      </button>
       <div className="remote-participants">{remoteParticipants}</div>
     </div>
   );

@@ -4,7 +4,7 @@ import CreateRoomForm from "./components/roomcreateform";
 import Room from "./Room";
 import axios from 'axios';
 import config from "./config/config";
-
+import { isEmpty, first } from "lodash";
 
 const CreateRoom = () => {
   const [username, setUsername] = useState("");
@@ -12,6 +12,10 @@ const CreateRoom = () => {
   const [room, setRoom] = useState(null);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const [videoRoom, setVideoRoom] = useState(null);
+  const [localVideoTrack, setLocalVideoTrack] = useState(null);
+  const [localAudioTrack, setLocalAudioTrack] = useState(null);
+  const [screenTrack, setScreenTrack] = useState(null);
 
   const handleUsernameChange = useCallback((event) => {
     setUsername(event.target.value);
@@ -49,7 +53,6 @@ const CreateRoom = () => {
           } 
          });
        });
-       console.log("response", response)
       // let response = null;
       // try {
       //   response =  await axios.post(url, params, headers)
@@ -73,17 +76,28 @@ const CreateRoom = () => {
       //     "Content-Type": "application/json",
       //   },
       // }).then((res) => res.json());
+
+      const videoTrack = await Video.createLocalVideoTrack();
+      setLocalVideoTrack(videoTrack);
+
+      const audioTrack = await Video.createLocalAudioTrack();
+      setLocalAudioTrack(audioTrack);
+
       if(response.data.success && response.data.success.data){
         console.log("response.data", response.data);
         Video.connect(response.data.success.data.token, {
           name: roomName,
+          tracks: [videoTrack, audioTrack],
+          insights: false
         })
           .then((room) => {
+            setVideoRoom(room);
             setConnecting(false);
             setRoom(room);
           })
           .catch((err) => {
             console.error(err);
+            setVideoRoom(null);
             setConnecting(false);
           });
       }else{
@@ -107,6 +121,35 @@ const CreateRoom = () => {
     });
   }, []);
 
+  const handleScreenShare = async () => {
+    try {
+      if (!screenTrack) {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true
+        });
+
+        const newScreenTrack = first(stream.getVideoTracks());
+
+        setScreenTrack(new Video.LocalVideoTrack(newScreenTrack));
+
+        videoRoom.localParticipant.publishTrack(newScreenTrack);
+        videoRoom.localParticipant.unpublishTrack(localVideoTrack);
+      } else {
+        videoRoom.localParticipant.unpublishTrack(screenTrack);
+        videoRoom.localParticipant.publishTrack(localVideoTrack);
+
+        if(screenTrack){
+          setScreenTrack(null);
+        }
+      }
+    } catch (error) {
+
+      if(screenTrack){
+        setScreenTrack(null);
+      }
+    }
+  };
+
   useEffect(() => {
     if (room) {
       const tidyUp = (event) => {
@@ -129,7 +172,16 @@ const CreateRoom = () => {
   let render;
   if (room) {
     render = (
-      <Room roomName={roomName} room={room} handleLogout={handleLogout} />
+      <Room 
+        roomName={roomName} 
+        room={room} 
+        handleLogout={handleLogout}
+        handleScreenShare={handleScreenShare} 
+        isScreenSharingSupported = { Boolean(
+          navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia
+        )}
+        isScreenSharingEnabled = {Boolean(screenTrack)}
+      />
     );
   } else {
     render = (

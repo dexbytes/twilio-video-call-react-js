@@ -86,7 +86,7 @@ button:hover {
   position: relative;
 }
 .room button {
-  position: absolute;
+  /* position: absolute; */
   top: 0;
   right: 20px;
 }
