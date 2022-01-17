@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Participant from "./Participant";
 
-const Room = ({ roomName, room, handleLogout, handleScreenShare = (()=>{}), isScreenSharingSupported, isScreenSharingEnabled=false}) => {
+const Room = (props) => {
+  const {
+    roomName, room, handleLogout, handleScreenShare, isScreenSharingSupported, isScreenSharingEnabled=false, audioStatus, handleAudio,
+    videoStatus, handleVideo
+  } = props;
   const [participants, setParticipants] = useState([]);
 
   useEffect(() => {
@@ -31,7 +35,6 @@ const Room = ({ roomName, room, handleLogout, handleScreenShare = (()=>{}), isSc
   return (
     <div className="room">
       <h2>Room: {roomName}</h2>
-        <button onClick={handleLogout}>Log out</button>
       <div className="local-participant">
         {room ? (
           <Participant
@@ -43,12 +46,33 @@ const Room = ({ roomName, room, handleLogout, handleScreenShare = (()=>{}), isSc
         )}
       </div>
       <h3>Remote Participants</h3>
-      <button 
+      <div style={{textAlign: "center"}}>
+        <button 
+          style={{marginRight:"10px"}}
+          onClick={handleLogout}
+        >
+          Leave
+        </button>
+        <button 
+          style={{marginRight:"10px"}}
           onClick={handleScreenShare}
           disabled={!isScreenSharingSupported}
-      >
-        {isScreenSharingEnabled ? "Stop sharing" : "Start sharing"}
-      </button>
+        >
+          {isScreenSharingEnabled ? "Stop sharing" : "Start sharing"}
+        </button>
+        <button 
+          style={{marginRight:"10px"}}
+          onClick={handleAudio}
+        >
+          {(audioStatus)? "Audio Mute": "Audio Unmute"}
+        </button>
+        <button 
+          style={{marginRight:"10px"}}
+          onClick={handleVideo}
+        >
+          {(videoStatus)? "Video Mute": "Video Unmute"}
+        </button>
+      </div>  
       <div className="remote-participants">{remoteParticipants}</div>
     </div>
   );

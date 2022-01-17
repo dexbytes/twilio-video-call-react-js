@@ -16,6 +16,8 @@ const CreateRoom = () => {
   const [localVideoTrack, setLocalVideoTrack] = useState(null);
   const [localAudioTrack, setLocalAudioTrack] = useState(null);
   const [screenTrack, setScreenTrack] = useState(null);
+  const [audioStatus, setAudioStatus] = useState(true);
+  const [videoStatus, setVideoStatus] = useState(true);
 
   const handleUsernameChange = useCallback((event) => {
     setUsername(event.target.value);
@@ -150,6 +152,28 @@ const CreateRoom = () => {
     }
   };
 
+  const handleAudio = () => {
+    room.localParticipant.audioTracks.forEach(publication => {
+      if(audioStatus){
+        publication.track.disable();
+      } else {
+        publication.track.enable();
+      }
+    });
+    setAudioStatus(!audioStatus);
+  }
+
+  const handleVideo = () => {
+    room.localParticipant.videoTracks.forEach(publication => {
+      if(videoStatus){
+        publication.track.disable();
+      } else {
+        publication.track.enable();
+      }
+    });
+    setVideoStatus(!videoStatus);
+  }
+
   useEffect(() => {
     if (room) {
       const tidyUp = (event) => {
@@ -181,6 +205,10 @@ const CreateRoom = () => {
           navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia
         )}
         isScreenSharingEnabled = {Boolean(screenTrack)}
+        audioStatus = {audioStatus}
+        handleAudio = {handleAudio}
+        videoStatus = {videoStatus}
+        handleVideo = {handleVideo}
       />
     );
   } else {
